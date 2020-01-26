@@ -4,7 +4,7 @@ This is a ruby demo of Conway's Game of Life.
 To play, the game will continually prompt you to advance time. Press any key when prompted to view the progression. 
 
 # Running the application    
-Execute the following command with ruby (Version 2.7.0p0):S
+Execute the following command with ruby (Version 2.7.0p0) in a bash terminal:
 
     ruby main.rb
 
