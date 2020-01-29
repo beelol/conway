@@ -16,9 +16,7 @@ class Grid
 
   def to_s
     @matrix.inject("") do |combined_rows, row|
-      formatted_row = row.inject("") do |combined_cells, cell|
-        "#{combined_cells} #{cell}"  
-      end   
+      formatted_row = row.inject("") { |combined_cells, cell| "#{combined_cells} #{cell}" }
       "#{combined_rows}\n#{formatted_row}"
     end
   end
