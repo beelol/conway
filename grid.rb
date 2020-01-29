@@ -9,7 +9,7 @@ class Grid
       @matrix[i] = []
 
       opts[:height].times do |j|
-        @matrix[i][j] = 0
+        @matrix[i][j] = [:x, :o].sample
       end
     end
   end
@@ -21,4 +21,7 @@ class Grid
     end
   end
     
+  def is_alive column, row
+    @matrix[column][row] == :o
+  end
 end
