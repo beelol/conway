@@ -1,5 +1,6 @@
 require './grid'
-require 'io/console'                                                                                                       
+require 'io/console'                               
+require 'json'
 
 def drive
   puts "Welcome to the game of life!"
@@ -13,7 +14,14 @@ def drive
 
   generation = 0
 
-  500.times { generation += 1; run_simulation demo_grid, generation }
+  json = File.read('config.json')
+  cycles = JSON.parse(json)["cycles"]
+  
+  if cycles != nil
+    cycles.times { generation += 1; run_simulation demo_grid, generation }
+  else 
+    loop { generation += 1; run_simulation demo_grid, generation }
+  end
 end
 
 def run_simulation grid, generation
