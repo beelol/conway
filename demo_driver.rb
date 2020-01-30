@@ -2,14 +2,23 @@ require './grid'
 require 'io/console'                                                                                                       
 
 def drive
-  width = 10
-  height = 10
+  # width = 60
+  # height = 60
 
-  demo_grid = Grid.new width: width, height: height, live_cells: [[height/2 - 1, width/2 - 1], [height/2, width/2], [height/2 - 1, width/2 + 1]]
+  # demo_grid = Grid.new width: width, height: height, live_cells: [[height/2 - 1, width/2 - 1], [height/2, width/2], [height/2 - 1, width/2 + 1]]
   # puts demo_grid.set_num_live_neighbors_at_live_cell 2, 2
   # puts demo_grid.set_num_live_neighbors_at_live_cell *gets.chomp.split(',').map(&:to_i)
 
   # puts demo_grid.should_come_alive? height/2 - 1, width/2
+  
+  puts "Welcome to the game of life!"
+  puts "Please enter the name of one of the following seeds:"
+  puts
+  Dir.entries("./seeds").each {|name| puts name.split(".")[0] if name != "." && name != ".." }
+
+  next_seed = gets.chomp
+  
+  demo_grid = load_seed_as_grid next_seed
 
   generation = 0
 
@@ -26,4 +35,26 @@ def drive
     
     demo_grid.tick
   end
+end
+
+def load_seed_as_grid name
+  matrix = []
+  live_cells = []
+  line_index = 0
+
+  File.foreach("./seeds/#{name}.txt") do |line|
+    matrix << line.split("").each_with_index.map do |char, char_index|
+        sym = char.to_sym
+        
+        live_cells << [line_index, char_index] if sym == Grid.live_cell_symbol
+        
+        sym
+    end
+    
+    line_index += 1
+  end
+
+    # live_cells.each {|e| puts "#{e[0]}, #{e[1]}"}
+
+  Grid.new matrix: matrix, live_cells: live_cells
 end

@@ -9,3 +9,5 @@ Execute the following command with ruby (Version 2.7.0p0) in a bash terminal:
     ruby main.rb
 
 You will then be continually prompted to advance time and be able to preview the effects of time progression.
+
+# Loading seeds

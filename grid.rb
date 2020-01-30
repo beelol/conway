@@ -2,23 +2,37 @@ NEIGHBOR_OFFSETS = [-1, 0, 1].repeated_permutation(2).to_a
 NEIGHBOR_OFFSETS.delete    [0, 0]
 
 class Grid
+  @@live_cell_symbol = :X
+  @@dead_cell_symbol = :"."
+
+  def self.live_cell_symbol
+    @@live_cell_symbol
+  end
+
+  def self.dead_cell_symbol
+    @@dead_cell_symbol
+  end
+
   def initialize(opts = {})
-    opts = { width: 5, height: 5, live_cells: []}.merge(opts)
+    opts = {matrix: [], width: 5, height: 5, live_cells: []}.merge(opts)
 
     # NEIGHBOR_OFFSETS.each {|coord| puts "[#{coord[0]}, #{coord[1]}]"}
 
     @num_live_neighbors_by_dead_cells = {}
     @num_live_neighbors_by_live_cells = {}
 
-    @matrix = []
+    @matrix = opts[:matrix]
     @live_cells = opts[:live_cells]
 
-    opts[:height].times do |i|
-      @matrix[i] = []
+    unless @matrix.length > 0
+      opts[:height].times do |i|
+        @matrix[i] = []
 
-      opts[:width].times { |j| @matrix[i][j] = @live_cells.include?([i, j]) ? :o : :x }
+        opts[:width].times { |j| @matrix[i][j] = @live_cells.include?([i, j]) ? @@live_cell_symbol : @@dead_cell_symbol }
+      end
     end
   end
+  
 
   def to_s
     @matrix.inject('') do |combined_rows, row|
@@ -29,7 +43,7 @@ class Grid
   end
 
   def is_alive?(row, column)
-    @matrix[row][column] == :o
+    @matrix[row][column] == @@live_cell_symbol
   end
 
   def tick
@@ -50,7 +64,7 @@ class Grid
     
     @num_live_neighbors_by_dead_cells.each do |key, value| 
       if should_come_alive?(key[0], key[1]) 
-        @matrix[key[0]][key[1]] = :o 
+        @matrix[key[0]][key[1]] = @@live_cell_symbol 
 
         # add new position to live cells for proper iteration of next generationds
         @live_cells << key
@@ -59,7 +73,7 @@ class Grid
 
     @num_live_neighbors_by_live_cells.each do |key, value| 
       if should_die?(key[0], key[1]) 
-        @matrix[key[0]][key[1]] = :x 
+        @matrix[key[0]][key[1]] = @@dead_cell_symbol 
 
         # remove old position from live cells for proper iteration of next generationds
         @live_cells.delete key
