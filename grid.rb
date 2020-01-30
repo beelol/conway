@@ -27,13 +27,33 @@ class Grid
     end
   end
 
-  def is_alive(row, column)
+  def is_alive?(row, column)
     @matrix[row][column] == :o
   end
 
-  def next_gen_status(row, column); end
+  def next_gen_status(row, column)
+    #  Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
+    
+  end
 
-  def should_die?(row, column); end
+  def should_die?(row, column)
+    live_cell_at_position = is_alive? @matrix[row][column]
+    return false if !live_cell_at_position
+
+    num_live_neighbors = live_cell_at_position ?
+     @num_live_neighbors_by_live_cells[[row, column]] : @num_live_neighbors_by_dead_cells[[row, column]]
+
+    #  Any live cell with fewer than two live neighbours dies, as if caused by underpopulation.
+    fewer_than_two_live_neighbors = num_live_neighbors < 2
+    
+    #  Any live cell with more than three live neighbours dies, as if by overpopulation
+    more_than_three_live_neighbors = num_live_neighbors > 3
+    
+    return true if fewer_than_two_live_neighbors || more_than_three_live_neighbors 
+      
+    #  Any live cell with two or three live neighbours lives on to the next generation.
+    false
+  end
 
   def in_bounds?(row, column)
     left_in_bounds = column >= 0
@@ -50,14 +70,14 @@ class Grid
 
   # make sure to CLEAR the hash before next generation is set to the matrix.
   def set_num_live_neighbors_at_live_cell(row, column)
-    return if !is_alive row, column
+    return if !is_alive? row, column
 
     NEIGHBOR_OFFSETS.each do |offset_factor|
       neighbor_row = row + offset_factor[0]
       neighbor_column = column + offset_factor[1]
 
       if in_bounds? neighbor_row, neighbor_column
-        if is_alive neighbor_row, neighbor_column
+        if is_alive? neighbor_row, neighbor_column
           add_live_cell_num_neighbors [row, column]
           puts "[#{neighbor_row}, #{neighbor_column}] is a live neighbor to [#{
                  row
