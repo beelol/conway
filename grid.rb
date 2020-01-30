@@ -32,14 +32,52 @@ class Grid
     @matrix[row][column] == :o
   end
 
-  def should_come_alive?(row, column)
-    #  Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
+  def tick
+    # memoize number of neighbors for live cells
+    # and dead cells with any adjacent live cells
+    @live_cells.each { |live_cell| set_num_live_neighbors_at_live_cell live_cell[0], live_cell[1] }
+
+    # update to next generation
+    overwrite_matrix_with_next_generation
+
+    # clear memoized values for 
+    @num_live_neighbors_by_dead_cells = {}
+    @num_live_neighbors_by_live_cells = {}
+  end
+
+  def overwrite_matrix_with_next_generation
+    # if the cell should come alive, change it in the matrix to be alive for next generation
     
+    @num_live_neighbors_by_dead_cells.each do |key, value| 
+      if should_come_alive?(key[0], key[1]) 
+        @matrix[key[0]][key[1]] = :o 
+
+        # add new position to live cells for proper iteration of next generationds
+        @live_cells << key
+      end
+    end
+
+    @num_live_neighbors_by_live_cells.each do |key, value| 
+      if should_die?(key[0], key[1]) 
+        @matrix[key[0]][key[1]] = :x 
+
+        # remove old position from live cells for proper iteration of next generationds
+        @live_cells.delete key
+      end
+    end
+  end
+
+  # Only for use with dead cells
+  def should_come_alive?(row, column)
+    return false if is_alive? row, column
+
+    #  Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
     @num_live_neighbors_by_dead_cells[[row, column]] == 3
   end
 
+  # Only for use with live cells
   def should_die?(row, column)
-    return false if !is_alive? @matrix[row][column]
+    return false if !is_alive? row, column
 
     num_live_neighbors = @num_live_neighbors_by_live_cells[[row, column]]
 
@@ -79,15 +117,15 @@ class Grid
       if in_bounds? neighbor_row, neighbor_column
         if is_alive? neighbor_row, neighbor_column
           add_live_cell_num_neighbors [row, column]
-          puts "[#{neighbor_row}, #{neighbor_column}] is a live neighbor to [#{
-                 row
-               }, #{column}]"
+          # puts "[#{neighbor_row}, #{neighbor_column}] is a live neighbor to [#{
+          #        row
+          #      }, #{column}]"
         else
           add_dead_cell_num_neighbors [neighbor_row, neighbor_column]
-          puts "[#{neighbor_row}, #{neighbor_column}] is in bounds"
+          # puts "[#{neighbor_row}, #{neighbor_column}] is in bounds"
         end
       else
-        puts "[#{neighbor_row}, #{neighbor_column}] is out of bounds"
+        # puts "[#{neighbor_row}, #{neighbor_column}] is out of bounds"
       end
     end
 
