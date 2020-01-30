@@ -11,12 +11,15 @@ def drive
 
   # puts demo_grid.should_come_alive? height/2 - 1, width/2
 
+  generation = 0
+
   while true do
     system 'clear'
     puts "Welcome to the game of life!"
     puts "To play, press any key when prompted to view the progression! The first generation is presented below."
     puts "To exit at any time, press the e key."
     
+    puts "Generation #{generation += 1}:"
     puts demo_grid
 
     exit if STDIN.getch.downcase == "e"
