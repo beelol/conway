@@ -11,11 +11,12 @@ class Grid
     @num_live_neighbors_by_live_cells = {}
 
     @matrix = []
+    @live_cells = opts[:live_cells]
 
     opts[:height].times do |i|
       @matrix[i] = []
 
-      opts[:width].times { |j| @matrix[i][j] = opts[:live_cells].include?([i, j]) ? :o : :x }
+      opts[:width].times { |j| @matrix[i][j] = @live_cells.include?([i, j]) ? :o : :x }
     end
   end
 
@@ -31,17 +32,16 @@ class Grid
     @matrix[row][column] == :o
   end
 
-  def next_gen_status(row, column)
+  def should_come_alive?(row, column)
     #  Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
     
+    @num_live_neighbors_by_dead_cells[[row, column]] == 3
   end
 
   def should_die?(row, column)
-    live_cell_at_position = is_alive? @matrix[row][column]
-    return false if !live_cell_at_position
+    return false if !is_alive? @matrix[row][column]
 
-    num_live_neighbors = live_cell_at_position ?
-     @num_live_neighbors_by_live_cells[[row, column]] : @num_live_neighbors_by_dead_cells[[row, column]]
+    num_live_neighbors = @num_live_neighbors_by_live_cells[[row, column]]
 
     #  Any live cell with fewer than two live neighbours dies, as if caused by underpopulation.
     fewer_than_two_live_neighbors = num_live_neighbors < 2
