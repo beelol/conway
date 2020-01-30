@@ -1,14 +1,15 @@
 NEIGHBOR_OFFSETS = [-1, 0, 1].repeated_permutation(2).to_a
 NEIGHBOR_OFFSETS.delete [0,0]
 
-
-
 class Grid
 
   def initialize opts={}
     opts = {width: 5, height: 5}.merge(opts)
 
     # NEIGHBOR_OFFSETS.each {|coord| puts "[#{coord[0]}, #{coord[1]}]"}
+
+    @num_live_neighbors_by_dead_cells = {}
+    @num_live_neighbors_by_live_cells = {}
 
     @matrix = [];
     
@@ -49,8 +50,13 @@ class Grid
     left_in_bounds && right_in_bounds && top_in_bounds && bottom_in_bounds
   end
 
-  def num_live_neighbors row, column
-    num_found_live_neighbors = 0
+  # This method will store the number of live neighbors to a live cell.
+  # It will also mark itself as adjacent to a dead cell so that dead cells
+  # may come alive if necessary conditions are met.
+
+  # make sure to CLEAR the hash before next generation is set to the matrix.
+  def set_num_live_neighbors_at_live_cell row, column
+    return if !is_alive row, column
 
     NEIGHBOR_OFFSETS.each do |offset_factor|
       neighbor_row = row + offset_factor[0]
@@ -58,9 +64,10 @@ class Grid
 
       if in_bounds? neighbor_row, neighbor_column
         if is_alive neighbor_row, neighbor_column
-           num_found_live_neighbors += 1
-           puts "[#{neighbor_row}, #{neighbor_column}] is a live neighbor to [#{row}, #{column}]"
+          add_live_cell_num_neighbors [row, column]
+          puts "[#{neighbor_row}, #{neighbor_column}] is a live neighbor to [#{row}, #{column}]"
         else
+          add_dead_cell_num_neighbors [neighbor_row, neighbor_column]
           puts "[#{neighbor_row}, #{neighbor_column}] is in bounds"
         end
       else
@@ -68,6 +75,22 @@ class Grid
       end
     end
 
-    num_found_live_neighbors
+    @num_live_neighbors_by_live_cells[[row, column]]
+  end
+
+  def add_dead_cell_num_neighbors position
+    if @num_live_neighbors_by_dead_cells.has_key? position
+      @num_live_neighbors_by_dead_cells[position] += 1
+    else
+      @num_live_neighbors_by_dead_cells[position] = 1
+    end
+  end
+
+  def add_live_cell_num_neighbors position
+    if @num_live_neighbors_by_live_cells.has_key? position
+      @num_live_neighbors_by_live_cells[position] += 1
+    else
+      @num_live_neighbors_by_live_cells[position] = 1
+    end
   end
 end
