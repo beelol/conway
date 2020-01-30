@@ -1,5 +1,5 @@
 NEIGHBOR_OFFSETS = [-1, 0, 1].repeated_permutation(2).to_a
-NEIGHBOR_OFFSETS.delete    [0, 0]
+NEIGHBOR_OFFSETS.delete [0, 0]
 
 class Grid
   @@live_cell_symbol = :X
@@ -15,8 +15,6 @@ class Grid
 
   def initialize(opts = {})
     opts = {matrix: [], width: 5, height: 5, live_cells: []}.merge(opts)
-
-    # NEIGHBOR_OFFSETS.each {|coord| puts "[#{coord[0]}, #{coord[1]}]"}
 
     @num_live_neighbors_by_dead_cells = {}
     @num_live_neighbors_by_live_cells = {}
@@ -49,59 +47,58 @@ class Grid
   def tick
     # memoize number of neighbors for live cells
     # and dead cells with any adjacent live cells
-    @live_cells.each { |live_cell| set_num_live_neighbors_at_live_cell live_cell[0], live_cell[1] }
+    @live_cells.each { |live_cell| set_num_live_neighbors_at_live_cell(live_cell[0], live_cell[1]) }
 
     # update to next generation
     overwrite_matrix_with_next_generation
 
-    # clear memoized values for 
+    # clear memoized values for next generation to determine neighbors
     @num_live_neighbors_by_dead_cells = {}
     @num_live_neighbors_by_live_cells = {}
   end
 
   def overwrite_matrix_with_next_generation
     # if the cell should come alive, change it in the matrix to be alive for next generation
-    
-    @num_live_neighbors_by_dead_cells.each do |key, value| 
-      if should_come_alive?(key[0], key[1]) 
-        @matrix[key[0]][key[1]] = @@live_cell_symbol 
+    new_dead_cells = []
+    new_live_cells = []
 
-        # add new position to live cells for proper iteration of next generationds
-        @live_cells << key
+    @num_live_neighbors_by_live_cells.each do |key, value| 
+      if should_die? *key 
+        new_dead_cells << key unless new_dead_cells.include? key
       end
     end
 
-    @num_live_neighbors_by_live_cells.each do |key, value| 
-      if should_die?(key[0], key[1]) 
-        @matrix[key[0]][key[1]] = @@dead_cell_symbol 
-
-        # remove old position from live cells for proper iteration of next generationds
-        @live_cells.delete key
+    @num_live_neighbors_by_dead_cells.each do |key, value| 
+      if should_come_alive? *key
+        new_live_cells << key unless new_live_cells.include? key
       end
+    end
+
+    new_dead_cells.each do |pos| 
+      @matrix[pos[0]][pos[1]] = @@dead_cell_symbol 
+      @live_cells.delete pos 
+    end
+    
+    new_live_cells.each do |pos| 
+      @matrix[pos[0]][pos[1]] = @@live_cell_symbol 
+      @live_cells << pos 
     end
   end
 
   # Only for use with dead cells
   def should_come_alive?(row, column)
-    return false if is_alive? row, column
-
     #  Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
     @num_live_neighbors_by_dead_cells[[row, column]] == 3
   end
 
   # Only for use with live cells
   def should_die?(row, column)
-    return false if !is_alive? row, column
-
     num_live_neighbors = @num_live_neighbors_by_live_cells[[row, column]]
 
     #  Any live cell with fewer than two live neighbours dies, as if caused by underpopulation.
-    fewer_than_two_live_neighbors = num_live_neighbors < 2
     
     #  Any live cell with more than three live neighbours dies, as if by overpopulation
-    more_than_three_live_neighbors = num_live_neighbors > 3
-    
-    return true if fewer_than_two_live_neighbors || more_than_three_live_neighbors 
+    return true if (num_live_neighbors < 2 || num_live_neighbors > 3)
       
     #  Any live cell with two or three live neighbours lives on to the next generation.
     false
@@ -122,7 +119,7 @@ class Grid
 
   # make sure to CLEAR the hash before next generation is set to the matrix.
   def set_num_live_neighbors_at_live_cell(row, column)
-    return if !is_alive? row, column
+    @num_live_neighbors_by_live_cells[[row, column]] = 0
 
     NEIGHBOR_OFFSETS.each do |offset_factor|
       neighbor_row = row + offset_factor[0]
@@ -131,19 +128,11 @@ class Grid
       if in_bounds? neighbor_row, neighbor_column
         if is_alive? neighbor_row, neighbor_column
           add_live_cell_num_neighbors [row, column]
-          # puts "[#{neighbor_row}, #{neighbor_column}] is a live neighbor to [#{
-          #        row
-          #      }, #{column}]"
         else
           add_dead_cell_num_neighbors [neighbor_row, neighbor_column]
-          # puts "[#{neighbor_row}, #{neighbor_column}] is in bounds"
         end
-      else
-        # puts "[#{neighbor_row}, #{neighbor_column}] is out of bounds"
       end
     end
-
-    @num_live_neighbors_by_live_cells[[row, column]]
   end
 
   def add_dead_cell_num_neighbors(position)
