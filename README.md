@@ -1,7 +1,8 @@
 # Overview
 
-This is a ruby demo of Conway's Game of Life. 
-To play, the game will continually prompt you to advance time. Press any key when prompted to view the progression. 
+This is a ruby demo implementation of Conway's Game of Life!
+
+To play, the game will ask you to load a seed, then will automatically progress through generations and display them.
 
 # Running the Application
 
