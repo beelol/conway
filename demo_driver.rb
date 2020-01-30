@@ -3,7 +3,7 @@ require 'io/console'
 
 def drive
   puts "Welcome to the game of life!"
-  puts "Please enter the name of one of the following seeds:"
+  puts "Please type the name of one of the following seeds and press enter to simulate:"
   puts
   Dir.entries("./seeds").each {|name| puts name.split(".")[0] if name != "." && name != ".." }
 
@@ -13,19 +13,21 @@ def drive
 
   generation = 0
 
-  while true do
-    system 'clear'
-    puts "Welcome to the game of life!"
-    puts "To play, press any key when prompted to view the progression! The first generation is presented below."
-    puts "To exit at any time, press the e key."
-    
-    puts "Generation #{generation += 1}:"
-    puts demo_grid
+  500.times { generation += 1; run_simulation demo_grid, generation }
+end
 
-    exit if STDIN.getch.downcase == "e"
-    
-    demo_grid.tick
-  end
+def run_simulation grid, generation
+  t = Time.now
+  
+  system 'clear'
+  puts "To exit at any time, kill the process by pressing control + c."
+  
+  puts "Generation #{generation}:"
+  puts grid
+  
+  grid.tick
+
+  sleep(t + 0.09 - Time.now)
 end
 
 def load_seed_as_grid name
@@ -44,8 +46,6 @@ def load_seed_as_grid name
     
     line_index += 1
   end
-
-    # live_cells.each {|e| puts "#{e[0]}, #{e[1]}"}
 
   Grid.new matrix: matrix, live_cells: live_cells
 end

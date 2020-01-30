@@ -32,6 +32,7 @@ class Grid
   end
   
 
+  # Format the matrix into a visual grid
   def to_s
     @matrix.inject('') do |combined_rows, row|
       formatted_row =
@@ -40,10 +41,9 @@ class Grid
     end
   end
 
-  def is_alive?(row, column)
-    @matrix[row][column] == @@live_cell_symbol
-  end
 
+  # The tick method is intended to be called repeatedly with an interval delay
+  # one tick will apply all the conditions to the current generation to create the next generation
   def tick
     # memoize number of neighbors for live cells
     # and dead cells with any adjacent live cells
@@ -55,6 +55,12 @@ class Grid
     # clear memoized values for next generation to determine neighbors
     @num_live_neighbors_by_dead_cells = {}
     @num_live_neighbors_by_live_cells = {}
+  end
+
+  private
+
+  def is_alive?(row, column)
+    @matrix[row][column] == @@live_cell_symbol
   end
 
   def overwrite_matrix_with_next_generation
@@ -116,8 +122,6 @@ class Grid
   # This method will store the number of live neighbors to a live cell.
   # It will also mark itself as adjacent to a dead cell so that dead cells
   # may come alive if necessary conditions are met.
-
-  # make sure to CLEAR the hash before next generation is set to the matrix.
   def set_num_live_neighbors_at_live_cell(row, column)
     @num_live_neighbors_by_live_cells[[row, column]] = 0
 
