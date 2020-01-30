@@ -3,7 +3,7 @@ NEIGHBOR_OFFSETS.delete    [0, 0]
 
 class Grid
   def initialize(opts = {})
-    opts = { width: 5, height: 5 }.merge(opts)
+    opts = { width: 5, height: 5, live_cells: []}.merge(opts)
 
     # NEIGHBOR_OFFSETS.each {|coord| puts "[#{coord[0]}, #{coord[1]}]"}
 
@@ -15,7 +15,7 @@ class Grid
     opts[:height].times do |i|
       @matrix[i] = []
 
-      opts[:width].times { |j| @matrix[i][j] = %i[x o].sample }
+      opts[:width].times { |j| @matrix[i][j] = opts[:live_cells].include?([i, j]) ? :o : :x }
     end
   end
 
